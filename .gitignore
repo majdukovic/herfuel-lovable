@@ -1,0 +1,6 @@
+# Competitor app screenshots (Cal AI / Carb Manager) are internal reference only.
+# Excluded from this public repo to avoid republishing competitors' copyrighted UI.
+# They remain locally at assets/competitor-ui/ — add them only to a PRIVATE repo if needed.
+assets/competitor-ui/
+
+.DS_Store

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>HerFuel — interactive prototype (v5)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="stage">
+    <div id="phone">
+      <div id="statusbar"><span>9:41</span><span class="sb-right">●●● &nbsp;5G &nbsp;<span class="batt">82%</span></span></div>
+      <div id="screen"></div>
+      <nav id="tabbar"></nav>
+      <button id="fab" aria-label="Log food">+</button>
+      <div id="overlay"></div>
+    </div>
+    <aside id="panel">
+      <h1>HerFuel <span class="v2">v5</span></h1>
+      <p class="tag">Comprehensive prototype: a great <b>general macro tracker</b> + <b>optional</b> life-stage modules + device integrations — with a built-in <b>feedback mode</b> for interviews.</p>
+      <div class="ctl">
+        <button data-act="fbtoggle">💬 Feedback mode (on/off)</button>
+        <button data-act="fbexport">⇩ Export feedback</button>
+        <button data-act="restart">↺ Restart onboarding</button>
+        <button data-act="demo">Toggle demo data</button>
+        <button data-act="nonum">Toggle no-numbers mode</button>
+        <button data-act="reset">Reset everything</button>
+      </div>
+      <div class="legend">
+        <strong>For participants — try this</strong>
+        <ol>
+          <li>It opens as a <b>plain, great tracker</b>. Top has a <b>swipeable summary</b> — <b>swipe / tap the dots</b> between <b>Calories &amp; macros → Move &amp; hydrate → nutrients that matter for you</b> (iron, calcium, fibre — adapts to your module). Food is grouped by <b>Breakfast / Lunch / Dinner</b> (add a <b>Snack</b> section in Me).</li>
+          <li><b>Change the day</b> from the strip at the very top (Cal AI–style) — tap a past day to see those logs, or a future day to plan.</li>
+          <li><b>Today’s tips</b> are <b>expanded</b> when a module is on (they’ve earned the space); the general-mode promo starts <b>collapsed</b> — tap any header to toggle. <b>Water &amp; steps</b> live on the Move &amp; hydrate carousel page (swipe to the 3rd dot to log water).</li>
+          <li><b>Tips adapt, they’re not static.</b> Turn on a module → drag the <b>week / cycle-day scrubber</b> on the target card (pregnancy target moves T1→T2→T3) and watch the focus + tips change. Expand <b>“Today’s tips”</b>, tap <b>“How do you feel today?”</b> → log <b>Nausea</b> → a matching tip appears with a <b>“Because…”</b> line. Tips also react to <b>nutrient gaps</b> in what you’ve logged.</li>
+          <li><b>Progress → Milestones</b> (Cal AI-style): <b>Day-streak</b> &amp; <b>Badges-earned</b> tiles + a <b>hexagon badge grid</b> (tap a badge for the unlock detail; <b>View all badges</b>). Optional (toggle in Me); counts <b>check-ins, never deficits</b>; a 0 streak shows a <b>fresh start</b>, not a loss.</li>
+          <li>Tap <b>＋</b> → it <b>fans open in place</b> (the screen stays) with <b>Log exercise · Search food database · Scan food · Saved foods &amp; meals</b> (+ <b>More</b> for voice / barcode / create / copy). Only after you pick one does a screen open → AI draft → confirm into a meal section. Tap <b>＋</b> (now ×) or the dimmed area to collapse.</li>
+          <li><b>Meals</b> tab — recipe &amp; meal ideas, meal plans &amp; saved meals, <b>tailored to your active life-stage</b> (like Carb Manager's Meals, phase-aware).</li>
+          <li><b>Me → Life-stage modules</b> → turn on <b>Breastfeeding</b> (or Pregnancy/Cycle/PCOS/Perimenopause) → Today's honest target, coaching, Meals &amp; articles all adapt. Turn off → clean tracker.</li>
+          <li><b>Me → Connected apps</b> → <b>Connect</b> Oura/Whoop/Apple Health → live data fills <b>Progress</b>, incl. a <b>Cycle &amp; body</b> category (cycle length, flow, BBT/skin-temp). Or tap <b>＋ Log today's symptoms</b> to add manually. Disconnect → gone.</li>
+        </ol>
+        <strong style="margin-top:10px">💬 Feedback mode</strong>
+        <p class="muted" style="margin:4px 0 0">Turn it on (button above, or the in-app bar) → <b>tap any feature to leave a comment</b>; "General" for overall thoughts; <b>Export</b> → <b>Send to me</b> (auto-collects to the founder's inbox once a Formspree URL is set in <code>app.js</code>) or <b>Copy</b>. For richer multi-user analytics, also use Maze — see README.</p>
+        <p class="muted" style="margin-top:8px">100% mock data · not medical advice · saved locally only.</p>
+      </div>
+    </aside>
+  </div>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
