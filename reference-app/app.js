@@ -20,7 +20,8 @@ var DEFAULTS={ tab:'today', onboarded:false, obStep:0, obTailor:false, activeMod
   profile:{name:'Maya', sex:'Female', age:31, height:'5’6"', weight:'148 lb', activity:'Lightly active'},
   customFoods:[], customRecipes:[], customMeals:[], fabActions:['search','scan','saved','exercise'],
   circleCat:'For you', joinedGroups:[], joinedChallenges:[], chat:{},
-  fasting:{active:false, plan:'16:8', startTs:null} };
+  fasting:{active:false, plan:'16:8', startTs:null}, progTab:'trends', measRange:'All',
+  diet:[], theme:'system', reduceMotion:false, targets:{water:64, steps:8000, protein:90, fibre:28} };
 var S;
 try{ S=Object.assign({},DEFAULTS,JSON.parse(localStorage.getItem('cf_v5')||'{}')); }catch(e){ S=Object.assign({},DEFAULTS); }
 /* merge locally-created items back into the runtime data (data.js resets each load, so re-merge each load) */
@@ -361,13 +362,20 @@ views.me=function(){
       '<div class="opt" data-act="unit:energy"><div class="ic">🔥</div><div style="flex:1"><div class="t">Energy</div><div class="s">Calories or kilojoules</div></div><span class="pill" style="background:var(--surface2)">'+(energy==='kcal'?'Calories':'Kilojoules')+'</span></div>'+
       '<div class="opt" data-act="unit:system"><div class="ic">🌍</div><div style="flex:1"><div class="t">Measurement system</div><div class="s">Weight, height &amp; volume</div></div><span class="pill" style="background:var(--surface2)">'+(sysu==='us'?'US (lb, oz)':'Metric (kg, ml)')+'</span></div>'+
     '</div>'+
-    '<div class="h2">Meal sections</div>'+
+    '<div class="h2">Personalize</div>'+
     '<div class="card">'+
+      '<div class="opt" data-act="diet"><div class="ic">🥗</div><div style="flex:1"><div class="t">Dietary preferences &amp; allergies</div><div class="s">'+((S.diet&&S.diet.length)?S.diet.join(' · '):'Tailor recipes &amp; suggestions')+'</div></div><span class="muted">›</span></div>'+
+      '<div class="opt" data-act="targets"><div class="ic">📊</div><div style="flex:1"><div class="t">Daily targets</div><div class="s">Water '+(S.targets.water)+' oz · Steps '+S.targets.steps.toLocaleString()+' · Protein '+S.targets.protein+'g · Fibre '+S.targets.fibre+'g</div></div><span class="muted">›</span></div>'+
       toggle('toggle:snack','Snack section','Add a Snack section to your daily food (Breakfast / Lunch / Dinner are always on).',S.snackOn)+
+    '</div>'+
+    '<div class="h2">Appearance &amp; accessibility</div>'+
+    '<div class="card">'+
+      '<div class="opt" data-act="theme"><div class="ic">🎨</div><div style="flex:1"><div class="t">Theme</div><div class="s">Light · Dark · System</div></div><span class="pill" style="background:var(--surface2)">'+({light:'Light',dark:'Dark',system:'System'}[S.theme])+'</span></div>'+
+      toggle('toggle:motion','Reduce motion','Minimise animations &amp; transitions.',S.reduceMotion)+
+      toggle('toggle:nonum','No-numbers mode','Track foods &amp; feelings without seeing calories.',S.noNumbers)+
     '</div>'+
     '<div class="h2">Experience</div>'+
     '<div class="card">'+
-      toggle('toggle:nonum','No-numbers mode','Track foods & feelings without seeing calories.',S.noNumbers)+
       toggle('toggle:gamify','Streaks &amp; badges','Celebrate consistency &amp; self-care. Counts check-ins, never deficits — turn off anytime.',S.gamify)+
       toggle('toggle:ev','Evidence labels','Show how strong the science is behind each tip.',S.showEvidence)+
       toggle('toggle:demo','Demo data','Fill the app with sample meals.',S.demo)+
@@ -383,6 +391,10 @@ views.me=function(){
       '<div class="opt" data-act="support:rate"><div class="ic">⭐</div><div style="flex:1"><div class="t">Rate HerFuel</div></div><span class="muted">›</span></div>'+
       '<div class="opt" data-act="support:terms"><div class="ic">📄</div><div style="flex:1"><div class="t">Terms &amp; Privacy</div></div><span class="muted">›</span></div>'+
     '</div>'+
+    '<div class="h2">Data &amp; privacy</div>'+
+    '<div class="card">'+
+      '<div class="opt" data-act="privacy"><div class="ic">🛡️</div><div style="flex:1"><div class="t">Your data &amp; privacy</div><div class="s">Export · hard-delete · what we sync · our promise</div></div><span class="muted">›</span></div>'+
+    '</div>'+
     '<div class="card">'+
       '<div class="opt" data-act="account:logout"><div class="ic">↩︎</div><div style="flex:1"><div class="t">Log out</div></div></div>'+
       '<div class="opt" data-act="account:delete"><div class="ic">🗑️</div><div style="flex:1"><div class="t" style="color:#B23A48">Delete account</div><div class="s">Permanently erase your data</div></div></div>'+
@@ -390,6 +402,30 @@ views.me=function(){
     '<button class="btn ghost" data-act="restart" style="margin-top:14px">Replay onboarding</button>'+
     '<p class="muted" style="text-align:center;font-size:11px;margin-top:12px">HerFuel · v5 prototype · not medical advice</p></div>';
 };
+var DIET_OPTS=['Vegetarian','Vegan','Pescatarian','Gluten-free','Dairy-free','Nut-free','Halal','Kosher','Low-FODMAP','No pork','No shellfish'];
+function openDiet(){
+  showOverlay('<div class="scrim" data-act="close"></div><div class="sheet" style="max-height:90%;overflow-y:auto"><div class="grab"></div>'+
+    '<div class="h1" style="font-size:20px;margin:2px 0 4px">Dietary preferences</div>'+
+    '<p class="sub">We’ll tailor recipes &amp; suggestions and flag foods to avoid. Pick any that apply.</p>'+
+    '<div class="sym" style="margin-top:10px">'+DIET_OPTS.map(function(o){var on=(S.diet||[]).indexOf(o)>=0;return '<button class="'+(on?'on':'')+'" data-act="dietpick:'+encodeURIComponent(o)+'">'+o+'</button>';}).join('')+'</div>'+
+    '<button class="btn" data-act="close" style="margin-top:16px">Done</button></div>'); }
+function openTargets(){ var t=S.targets;
+  var row=function(label,val,unit){ return '<div class="spread" style="padding:11px 0;border-bottom:1px solid var(--line)"><span style="font-size:14px">'+label+'</span><span class="num-hide" style="font-weight:700">'+val+' '+unit+'</span></div>'; };
+  showOverlay('<div class="scrim" data-act="close"></div><div class="sheet"><div class="grab"></div>'+
+    '<div class="h1" style="font-size:20px;margin:2px 0 8px">Daily targets</div>'+
+    '<div class="card" style="padding:4px 14px">'+row('💧 Water',t.water,'oz')+row('👟 Steps',t.steps.toLocaleString(),'')+row('🍗 Protein',t.protein,'g')+row('🌾 Fibre',t.fibre,'g')+'</div>'+
+    '<p class="note muted" style="margin-top:10px">Tip: turn on a life-stage module and HerFuel sets these honestly for your stage.</p>'+
+    '<button class="btn ghost" data-act="goals" style="margin-top:8px">Edit calorie &amp; macro goals</button>'+
+    '<button class="btn ghost" data-act="close" style="margin-top:8px">Close</button></div>'); }
+function openPrivacy(){
+  showOverlay('<div class="scrim" data-act="close"></div><div class="sheet" style="max-height:90%;overflow-y:auto"><div class="grab"></div>'+
+    '<div class="h1" style="font-size:20px;margin:2px 0 8px">Your data &amp; privacy</div>'+
+    '<div class="card" style="border:1px solid var(--teal)"><b style="color:var(--teal)">Our promise</b><p class="sub" style="margin-top:6px">Your reproductive &amp; cycle data stays on your device by default. We never sell your data. Export or hard-delete everything, any time.</p></div>'+
+    optRow('data:export','⬇️','Export my data','Download everything as a file')+
+    optRow('data:sync','🔁','What syncs to the cloud','Only what you choose, encrypted')+
+    optRow('data:ondevice','📱','On-device cycle data','Reproductive data never leaves this phone')+
+    optRow('account:delete','🗑️','Delete everything','Permanent — can’t be undone')+
+    '<button class="btn ghost" data-act="close" style="margin-top:10px">Close</button></div>'); }
 function openProfile(){
   var p=S.profile;
   var row=function(act,label,val){ return '<div class="opt" data-act="'+act+'"><div style="flex:1"><div class="t">'+label+'</div></div><span class="num-hide" style="font-weight:600">'+val+'</span><span class="muted" style="margin-left:8px">›</span></div>'; };
@@ -409,33 +445,75 @@ function spark(vals,color){ var mn=Math.min.apply(null,vals),mx=Math.max.apply(n
   var pts=vals.map(function(v,i){return (i/(vals.length-1)*100).toFixed(1)+','+(96-((v-mn)/r*88)).toFixed(1);}).join(' ');
   return '<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:54px"><polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>'; }
 
+var PROG_TABS=[['trends','Trends'],['measurements','Measurements'],['cycle','Cycle & body'],['insights','Insights'],['milestones','Milestones']];
 views.progress=function(){
-  var ms=CF.measureById(S.measure)||CF.MEASURES[0];
-  var srcOk=(ms.source==='manual'||ms.source==='logged')||!!S.connected[ms.source];
-  var cats={}; CF.MEASURES.forEach(function(x){ (cats[x.cat]=cats[x.cat]||[]).push(x); });
-  var picker=Object.keys(cats).map(function(cat){ return '<div class="muted" style="font-size:10px;font-weight:700;letter-spacing:.5px;margin:6px 0 4px">'+cat.toUpperCase()+'</div><div style="display:flex;flex-wrap:wrap">'+
-    cats[cat].map(function(x){var on=x.id===S.measure; return '<button class="pill" data-act="measure:'+x.id+'" style="background:'+(on?'var(--ink)':'var(--surface2)')+';color:'+(on?'#fff':'var(--ink)')+';border:1px solid '+(on?'var(--ink)':'var(--line)')+';cursor:pointer;margin:0 6px 8px 0">'+x.label+'</button>';}).join('')+'</div>';}).join('');
+  var pt=S.progTab||'trends';
+  var bar='<div class="ctabs" style="margin-top:8px">'+PROG_TABS.map(function(t){return '<button class="ctab'+(pt===t[0]?' on':'')+'" data-act="progtab:'+t[0]+'">'+t[1]+'</button>';}).join('')+'</div>';
   var body;
-  if(!srcOk){
-    body='<div class="card"><div class="spread"><b style="font-size:15px">'+ms.label+'</b><span class="muted" style="font-size:12px">'+ms.cat+'</span></div>'+
-      '<div style="text-align:center;padding:22px 0"><div style="font-size:32px">🔌</div><p class="sub" style="margin-top:8px">Connect <b>'+CF.intName(ms.source)+'</b> to auto-fill '+ms.label.toLowerCase()+' and see its history here.</p>'+
-      '<button class="btn" data-act="tab:me" style="margin-top:8px">Connect device</button></div></div>';
-  } else {
-    var d=ms.data, last=d[d.length-1], avg=Math.round(d.reduce(function(a,b){return a+b;},0)/d.length*10)/10;
-    var srcLabel=(ms.source==='logged')?'from your food logs':(ms.source==='manual')?'manual entries':'auto-synced from '+CF.intName(ms.source);
-    body='<div class="card"><div class="spread"><b style="font-size:15px">'+ms.label+(ms.unit?' ('+ms.unit+')':'')+'</b><span class="muted" style="font-size:11px">'+srcLabel+'</span></div>'+
-      '<div class="row" style="gap:6px;margin:10px 0"><span class="pill" style="background:var(--surface2)">1W</span><span class="pill" style="background:var(--surface2)">1M</span><span class="pill" style="background:var(--ink);color:#fff">All</span></div>'+
-      spark(d,'var(--teal)')+
-      '<div class="spread" style="margin-top:12px"><div><div class="num-hide" style="font-size:20px;font-weight:700">'+last+(ms.unit?' '+ms.unit:'')+'</div><div class="muted" style="font-size:11px">latest</div></div>'+
-        '<div style="text-align:right"><div class="num-hide" style="font-size:20px;font-weight:700">'+avg+'</div><div class="muted" style="font-size:11px">average</div></div></div>'+
-      (ms.goal?'<div class="pill" style="background:var(--teal-soft);color:var(--teal);margin-top:12px">'+ms.goal+'</div>':'')+'</div>'+
-      '<div class="h2">History</div><div class="card">'+d.slice().reverse().slice(0,6).map(function(v,i){return '<div class="meal"><div><div class="nm num-hide">'+v+(ms.unit?' '+ms.unit:'')+'</div><div class="mt">Jun '+(9-i)+', 2026</div></div></div>';}).join('')+'</div>'+
-      '<button class="btn ghost" data-act="addmeasure" style="margin-top:12px">+ Add '+ms.label.toLowerCase()+' manually</button>';
-  }
-  return '<div class="pad"><div class="h1">Progress</div><p class="sub">Your measurements &amp; trends. Connected devices auto-fill these — or add manually.</p>'+
-    consistencyCard()+picker+body+
-    '<button class="btn ghost" data-act="logsym" style="margin-top:14px">＋ Log today’s symptoms</button></div>';
+  if(pt==='measurements') body=measDetail(CF.measureById(S.measure)||CF.MEASURES[0])+'<div class="h2">All measurements</div>'+measLibrary();
+  else if(pt==='cycle') body=cycleView();
+  else if(pt==='insights') body=insightsView();
+  else if(pt==='milestones') body='<div class="h2">Milestones</div>'+mileTiles(true)+'<button class="btn ghost" data-act="milestones" style="margin-top:12px">View all badges</button>';
+  else body=trendsView();
+  return '<div class="pad"><div class="h1">Progress</div><p class="sub">Your patterns — all optional. No weight or deficit streaks, ever.</p>'+bar+body+'</div>';
 };
+function avg(a){ return a.reduce(function(x,y){return x+y;},0)/a.length; }
+function progColor(ms){ return ms.cat==='Cycle & body'?'var(--plum)':'var(--teal)'; }
+function parseGoal(ms){ var m=(ms.goal||'').replace(/,/g,'').match(/[\d.]+/); return m?parseFloat(m[0]):null; }
+function srcOkM(ms){ return (ms.source==='manual'||ms.source==='logged')||!!S.connected[ms.source]; }
+function srcLabel(ms){ return (ms.source==='logged')?'from your food logs':(ms.source==='manual')?'manual entries':'synced from '+CF.intName(ms.source); }
+function lineChart(vals,color,goalNum){
+  var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  if(goalNum!=null){ mn=Math.min(mn,goalNum); mx=Math.max(mx,goalNum); }
+  var r=(mx-mn)||1, y=function(v){ return (94-((v-mn)/r*84)).toFixed(1); };
+  var pts=vals.map(function(v,i){return (vals.length<2?50:(i/(vals.length-1)*100)).toFixed(1)+','+y(v);}).join(' ');
+  var gl=goalNum!=null?'<line x1="0" x2="100" y1="'+y(goalNum)+'" y2="'+y(goalNum)+'" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3,3" vector-effect="non-scaling-stroke"/>':'';
+  return '<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:120px">'+gl+'<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>'; }
+function rangeSlice(d,r){ return r==='1W'?d.slice(-7):d; }
+function deltaRows(full,unit){ var L=full.length,last=full[L-1];
+  return '<div class="card" style="padding:4px 14px">'+[['7 days',Math.max(0,L-8)],['30 days',0],['All time',0]].map(function(w,i){ var diff=Math.round((last-full[w[1]])*10)/10; var ar=diff>0?'↑':diff<0?'↓':'→';
+    return '<div class="spread" style="padding:9px 0'+(i<2?';border-bottom:1px solid var(--line)':'')+'"><span class="muted" style="font-size:12px">'+w[0]+'</span><span class="num-hide" style="font-weight:700;color:'+(diff===0?'var(--ink3)':'var(--ink)')+'">'+ar+' '+Math.abs(diff)+(unit?' '+unit:'')+'</span></div>'; }).join('')+'</div>'; }
+function measDetail(ms){
+  if(!srcOkM(ms)) return '<div class="card" style="margin-top:12px"><div class="spread"><b style="font-size:15px">'+ms.label+'</b><span class="muted" style="font-size:12px">'+ms.cat+'</span></div><div style="text-align:center;padding:20px 0"><div style="font-size:30px">🔌</div><p class="sub" style="margin-top:8px">Connect <b>'+CF.intName(ms.source)+'</b> to auto-fill '+ms.label.toLowerCase()+'.</p><button class="btn" data-act="tab:me" style="margin-top:8px">Connect device</button></div></div>';
+  var full=ms.data, rng=S.measRange||'All', d=rangeSlice(full,rng), last=full[full.length-1], start=full[0], g=parseGoal(ms), col=progColor(ms);
+  var diff=Math.round((last-start)*10)/10, word=diff<-0.3?'down '+Math.abs(diff)+(ms.unit?' '+ms.unit:''):diff>0.3?'up '+diff+(ms.unit?' '+ms.unit:''):'steady';
+  return '<div class="card" style="margin-top:12px"><div class="spread"><b style="font-size:15px">'+ms.label+(ms.unit?' ('+ms.unit+')':'')+'</b><span class="muted" style="font-size:11px">'+srcLabel(ms)+'</span></div>'+
+    '<div class="row" style="gap:6px;margin:10px 0">'+['1W','1M','All'].map(function(r){var on=rng===r;return '<button class="pill" data-act="range:'+r+'" style="background:'+(on?'var(--ink)':'var(--surface2)')+';color:'+(on?'#fff':'var(--ink)')+';cursor:pointer">'+r+'</button>';}).join('')+'</div>'+
+    lineChart(d,col,g)+
+    '<div class="row" style="justify-content:space-between;margin-top:14px;text-align:center"><div style="flex:1"><div class="num-hide" style="font-size:17px;font-weight:800">'+start+'</div><div class="muted" style="font-size:10px;letter-spacing:.04em">START</div></div>'+
+      '<div style="flex:1"><div class="num-hide" style="font-size:17px;font-weight:800">'+last+'</div><div class="muted" style="font-size:10px;letter-spacing:.04em">LATEST</div></div>'+
+      '<div style="flex:1"><div style="font-size:17px;font-weight:800">'+(g!=null?g:'—')+'</div><div class="muted" style="font-size:10px;letter-spacing:.04em">GOAL</div></div></div>'+
+    '<p class="sub" style="margin:10px 0 0;text-align:center">'+(word==='steady'?'Steady over this period.':word.charAt(0).toUpperCase()+word.slice(1)+' over this period.')+'</p></div>'+
+    '<div class="h2">Change over time</div>'+deltaRows(full,ms.unit)+
+    '<div class="row" style="gap:8px;margin-top:12px"><button class="btn ghost" data-act="addentry" style="margin:0">＋ Add entry</button><button class="btn ghost" data-act="setgoal" style="margin:0">🎯 Set goal</button></div>'+
+    '<div class="h2">History</div><div class="card">'+full.slice().reverse().slice(0,6).map(function(v,i){return '<div class="meal"><div style="flex:1"><div class="nm num-hide">'+v+(ms.unit?' '+ms.unit:'')+'</div><div class="mt">Jun '+(9-i)+', 2026</div></div></div>';}).join('')+'</div>'; }
+function measLibrary(){
+  var cats={}; CF.MEASURES.forEach(function(x){(cats[x.cat]=cats[x.cat]||[]).push(x);});
+  return Object.keys(cats).map(function(cat){ return '<div class="muted" style="font-size:10px;font-weight:700;letter-spacing:.5px;margin:14px 0 6px">'+cat.toUpperCase()+'</div><div class="card" style="padding:4px 14px">'+
+    cats[cat].map(function(x){var on=x.id===S.measure,last=x.data[x.data.length-1];
+      return '<div class="meal" data-act="measopen:'+x.id+'" style="cursor:pointer'+(on?';background:var(--surface2);border-radius:10px;padding-left:8px':'')+'"><div style="flex:1"><div class="nm">'+x.label+'</div><div class="mt">'+srcLabel(x)+'</div></div>'+(srcOkM(x)?'<div class="num-hide" style="font-weight:700;margin-right:8px">'+last+(x.unit?' '+x.unit:'')+'</div>':'<span class="pill" style="background:var(--surface2);margin-right:6px">connect</span>')+'<span class="muted">›</span></div>';}).join('')+'</div>';
+  }).join('')+'<button class="btn ghost" data-act="addmeasure" style="margin-top:12px">＋ Track something new</button>'; }
+function trendsView(){
+  function mini(id){ var ms=CF.measureById(id); if(!ms) return ''; var full=ms.data,last=full[full.length-1],start=full[0],g=parseGoal(ms),diff=Math.round((last-start)*10)/10,col=progColor(ms);
+    if(!srcOkM(ms)) return '<div class="card" data-act="measopen:'+id+'" style="cursor:pointer"><div class="spread"><b style="font-size:14px">'+ms.label+'</b><span class="muted" style="font-size:12px">connect '+CF.intName(ms.source)+' ›</span></div></div>';
+    return '<div class="card" data-act="measopen:'+id+'" style="cursor:pointer"><div class="spread"><b style="font-size:14px">'+ms.label+'</b><span class="num-hide" style="font-weight:800">'+last+(ms.unit?' '+ms.unit:'')+'</span></div>'+lineChart(full,col,g)+'<div class="spread" style="margin-top:8px"><span class="muted" style="font-size:11px">'+(g!=null?'goal '+g+(ms.unit?' '+ms.unit:''):'no goal set')+'</span><span class="num-hide" style="font-size:12px;font-weight:700">'+(diff===0?'steady':(diff>0?'↑ ':'↓ ')+Math.abs(diff)+(ms.unit?' '+ms.unit:''))+'</span></div></div>'; }
+  return '<div class="h2">Weight</div>'+mini('weight')+'<div class="h2">Nutrition</div>'+mini('calories')+mini('protein')+'<div class="h2">Activity &amp; sleep</div>'+mini('steps')+mini('sleep'); }
+function cycleView(){
+  var ms=CF.MEASURES.filter(function(x){return x.cat==='Cycle & body';});
+  return '<p class="sub" style="margin-top:10px">We read these for nutrition context — not to replace your period tracker.</p>'+
+    ms.map(function(x){ if(!srcOkM(x)) return '<div class="card"><b style="font-size:14px">'+x.label+'</b><p class="sub" style="margin:6px 0 0">Connect '+CF.intName(x.source)+' or log it manually.</p></div>';
+      return '<div class="card" data-act="measopen:'+x.id+'" style="cursor:pointer"><div class="spread"><b style="font-size:14px">'+x.label+'</b><span class="num-hide" style="font-weight:800">'+x.data[x.data.length-1]+(x.unit?' '+x.unit:'')+'</span></div>'+lineChart(x.data,'var(--plum)',parseGoal(x))+'</div>';}).join('')+
+    '<button class="btn ghost" data-act="logsym" style="margin-top:12px">＋ Log today’s symptoms</button>'; }
+function insightsView(){
+  var m=mod(), p=CF.measureById('protein').data, pdiff=Math.round(avg(p.slice(-5))-avg(p.slice(0,5)));
+  var ins=[{icon:'💪',grade:'supported',t:'Protein is '+(pdiff>=0?'up +'+pdiff:'down '+pdiff)+' g/day vs last week'+(m?' — supports your '+m.label.toLowerCase():'')+'.'}];
+  if(S.activeModule==='cycle') ins.push({icon:'🩸',grade:'supported',t:'Iron tends to dip on your heavier-flow days — worth front-loading iron around your period.'});
+  if(S.activeModule==='pregnancy') ins.push({icon:'🤰',grade:'strong',t:'Your weight is tracking within the healthy second-trimester range.'});
+  ins.push({icon:'🌾',grade:'strong',t:'You hit your fibre goal 5 of 7 days this week.'});
+  ins.push({icon:'💧',grade:'supported',t:'Hydration is trending up — about +0.4 L vs last week.'});
+  ins.push({icon:'⚡',grade:'exploratory',t:'Your energy felt lower on days you logged under 70 g protein.'});
+  return '<p class="sub" style="margin-top:10px">Patterns we noticed — honest, evidence-graded, never a verdict on you.</p>'+
+    ins.map(function(x){return '<div class="card"><div class="spread" style="margin-bottom:6px"><span style="font-size:20px">'+x.icon+'</span>'+evBadge(x.grade)+'</div><p style="margin:0;font-size:14px;line-height:1.45">'+x.t+'</p></div>';}).join(''); }
 /* Cal AI-style Milestones — two tiles (streak + badges) + hexagon badge grid.
    DE-safe: a 0 streak is a "fresh start" (never "you lost 14"); counts check-ins, not deficits. */
 function mileTiles(linked){
@@ -910,6 +988,12 @@ function render(){
   if(!S.fabActions) S.fabActions=['search','scan','saved','exercise'];
   if(!S.circleCat) S.circleCat='For you'; if(!S.joinedGroups) S.joinedGroups=[]; if(!S.joinedChallenges) S.joinedChallenges=[]; if(!S.chat) S.chat={};
   if(!S.fasting) S.fasting={active:false,plan:'16:8',startTs:null};
+  if(!S.progTab) S.progTab='trends'; if(!S.measRange) S.measRange='All';
+  if(!S.diet) S.diet=[]; if(!S.theme) S.theme='system'; if(S.reduceMotion==null) S.reduceMotion=false;
+  if(!S.targets) S.targets={water:64,steps:8000,protein:90,fibre:28};
+  var dark = S.theme==='dark' || (S.theme==='system' && (function(){try{return matchMedia('(prefers-color-scheme: dark)').matches;}catch(e){return false;}})());
+  document.body.classList.toggle('dark',dark);
+  document.body.classList.toggle('reduce-motion',!!S.reduceMotion);
   if(!S._tipsOpenV1){ if(S.collapsed) delete S.collapsed.coach; S._tipsOpenV1=true; }  /* migrate: tips now open by default */
   document.body.classList.toggle('hide-num',S.noNumbers);
   document.body.classList.toggle('hide-ev',!S.showEvidence);
@@ -968,6 +1052,13 @@ function handle(act){
   if(act==='unit:energy'){ S.units.energy = S.units.energy==='kcal'?'kJ':'kcal'; return set({}); }
   if(act==='unit:system'){ S.units.system = S.units.system==='us'?'metric':'us'; return set({}); }
   if(act==='manageplan'){ return toast('Manage subscription (demo).'); }
+  if(act==='diet') return openDiet();
+  if(act.indexOf('dietpick:')===0){ var dv=decodeURIComponent(act.slice(9)); var da=(S.diet||[]).slice(); var dj=da.indexOf(dv); if(dj>=0)da.splice(dj,1);else da.push(dv); S.diet=da; save(); return openDiet(); }
+  if(act==='targets') return openTargets();
+  if(act==='privacy') return openPrivacy();
+  if(act==='theme'){ S.theme={system:'light',light:'dark',dark:'system'}[S.theme]||'system'; return set({}); }
+  if(act==='toggle:motion') return set({reduceMotion:!S.reduceMotion});
+  if(act.indexOf('data:')===0){ return toast(({export:'Exported your data (demo).',sync:'Sync settings (demo).',ondevice:'Cycle data stays on-device.'}[act.slice(5)]||'(demo)')); }
   if(act.indexOf('support:')===0){ return toast(({help:'Help & support',feature:'Request a feature',rate:'Rate HerFuel',terms:'Terms & Privacy'}[act.slice(8)]||'Support')+' (demo).'); }
   if(act==='account:logout'){ return toast('Logged out (demo).'); }
   if(act==='account:delete'){ return toast('Delete account (demo) — would confirm twice.'); }
@@ -1000,6 +1091,11 @@ function handle(act){
   if(act.indexOf('sadd:')===0){ var base=(S.connected.garmin?8140:(S.connected.applehealth?6420:0)); S.stepsAdded=Math.max(-base,(S.stepsAdded||0)+parseInt(act.slice(5),10)); save(); render(); return openStepsLog(); }
   if(act.indexOf('measure:')===0) return set({measure:act.slice(8)});
   if(act==='addmeasure') return toast('Add measurement (demo).');
+  if(act.indexOf('progtab:')===0) return set({progTab:act.slice(8)});
+  if(act.indexOf('range:')===0) return set({measRange:act.slice(6)});
+  if(act.indexOf('measopen:')===0) return set({measure:act.slice(9), progTab:'measurements'});
+  if(act==='addentry') return toast('Add entry (demo).');
+  if(act==='setgoal') return toast('Set goal (demo).');
   if(act==='meals:create') return openCreateMenu();
   if(act.indexOf('my:')===0) return openMyList(act.slice(3));
   if(act.indexOf('recipe:')===0){ var rp=act.slice(7).split(':'); return openRecipe(rp[0],+rp[1]); }
