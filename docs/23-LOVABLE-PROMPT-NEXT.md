@@ -23,3 +23,17 @@ Context: the last four fixes are verified done (measurement detail + Add-entry, 
 > Keep our honesty rules: move the calorie number only for perinatal (the established science), never for the cycle. Persist everything to localStorage.
 
 *(Core-feature discrepancy basis: `17-FEATURE-GAP-ANALYSIS.md`. Women-led research: `22-WOMENS-APPS-RESEARCH.md`. Reference behaviour: `reference-app/`.)*
+
+---
+
+## Re-test result (2026-06-10) — most of it landed
+**✅ Implemented:** Restaurant / Eating-out logging (describe or photo → estimate → fix); **Shopping list** (Me → "From meal plans + manual adds"); **PCOS macro mode** (distribution wording); **Experiments (Waves)** ("Time-boxed habit trials with a review"). Plus the prior fixes hold — measurement detail + Add-entry, units convert, logging works, **no #418**, only a 404 asset.
+**❌ Not yet (second pass):** Recipe import by URL · Insights/guidance expert attribution · Birth-control branch in Cycle · Progress photos · ED-safe guardrails.
+
+### Follow-up prompt (paste — the remaining 5)
+> A few items from the last list didn't make it in — please add, keeping everything that's working (restaurant logging, shopping list, PCOS macro mode, Experiments, the Progress hub, dark mode):
+> 1. **Recipe import by URL** — in Create → Recipe, an "Import from a link" field: paste a recipe URL → *mock-parse* into title + ingredients + steps + estimated macros → editable → save to My Recipes.
+> 2. **Attribution on guidance** — show the attributed expert (RD/MD) + a source on each **Insight** and **Today's-tip / coaching** card, like Circle's articles already do.
+> 3. **Birth-control branch in the Cycle module** — let the user indicate they're on hormonal contraception; then there are no natural phases, so drop phase logic and say so honestly, while keeping the iron/comfort nutrition support.
+> 4. **Progress photos — optional & private, OFF by default** — a neutral photo log in Progress; never a "before/after" frame; never required.
+> 5. **ED-safe guardrails** — a sensible **minimum-calorie floor**; **never restrict the target during pregnancy/breastfeeding**; an option to **hide the calorie ring entirely**; and a gentle "is tracking ever stressful for you?" check with supportive sign-posting in onboarding.
