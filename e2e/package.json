@@ -1,0 +1,13 @@
+{
+  "name": "herfuel-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HerFuel live-app regression suite (playwright-core + system Chrome)",
+  "scripts": {
+    "test": "node run.js",
+    "test:headed": "HEADED=1 node run.js"
+  },
+  "dependencies": {
+    "playwright-core": "^1.49.0"
+  }
+}
