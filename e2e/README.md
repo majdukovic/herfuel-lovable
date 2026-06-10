@@ -10,7 +10,9 @@ npm install          # once (only playwright-core)
 node run.js          # full suite  (needs Node ≥ 18; e.g. PATH="/opt/homebrew/opt/node@22/bin:$PATH")
 node run.js 03 06    # only specs with those prefixes
 HEADED=1 node run.js # watch the browser
+SHOTS_ALL=1 node run.js  # screenshot after every step (debugging), not just failures
 HERFUEL_BASE_URL=https://my-domain node run.js   # different deployment
+HERFUEL_BASE_URL=http://localhost:8080 node run.js  # against `bun run dev` of sweet-link-system
 ```
 
 Exit code 1 if any hard step fails. Report: `report/last-run.json`; failure screenshots: `report/shots/`.
@@ -34,7 +36,8 @@ Exit code 1 if any hard step fails. Report: `report/last-run.json`; failure scre
 | 06 modules honesty | baseline target; Pregnancy T2 = exactly +340; fasting warns in pregnancy; toggle off restores baseline; **Cycle module changes nothing**; `[soft]` birth-control branch (prompt 29) |
 | 07 progress | anti-shame header, 5 subtabs, add weight entry, evidence-graded + attributed insights, no shame milestones |
 | 08 me settings | dark mode flips theme, kcal→kJ real conversion, no-numbers mode reversible, privacy promises, connected-apps honest framing; `[soft]` real Strava (prompt 30) |
-| 09 circle | Learn content, RD/MD attribution, search filter, article detail |
+| 09 circle | honest editorial content: "HerFuel Editorial" byline + evidence grades, NO invented experts, article expands with cited sources + pending-RD-review note, real YouTube links with creator credentials, no fabricated group member counts |
+| 10 integrations | Connected apps (Strava + honest coming-soon), Renpho CSV import end-to-end with "imported" tag, webhook challenge echo, workout-calories toggle off by default, progress-photos privacy |
 
 ## Adding a spec
 

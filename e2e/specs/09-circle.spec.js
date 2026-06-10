@@ -1,6 +1,8 @@
-// Circle: learn content with professional attribution, search and category filter.
+// Circle: honest editorial content — articles by "HerFuel Editorial" with cited
+// real sources (no invented experts), real YouTube videos by credentialed
+// creators, groups without fabricated member counts.
 module.exports = {
-  name: '09 · Circle: content, search, attribution',
+  name: '09 · Circle: honest content, search, sources',
   async run(t) {
     const { page: p, H } = t;
 
@@ -8,13 +10,14 @@ module.exports = {
       await H.goHome(p);
       await H.tab(p, 'Circle');
       const txt = await H.waitText(p, /Learn|Watch|Challenges|Groups/i, 8000);
-      t.data.circle = txt;
       t.expect(/Learn/i.test(txt), 'Learn section present');
     });
 
-    await t.step('articles carry RD/MD attribution', async () => {
+    await t.step('articles: honest editorial byline + evidence grades, no invented experts', async () => {
       const txt = await H.bodyText(p);
-      t.expect(/RD|MD|Dr\./.test(txt), 'professional attribution visible in article cards');
+      t.expect(/HerFuel Editorial/i.test(txt), 'editorial byline present');
+      t.expect(/●●●|●●○|●○○/.test(txt), 'evidence grade chips on cards');
+      t.expect(!/Asha Mehta|Maya Cole|Lina Park/i.test(txt), 'no fabricated expert authors');
     });
 
     await t.step('search filters content', async () => {
@@ -28,23 +31,41 @@ module.exports = {
       await p.waitForTimeout(800);
     });
 
-    await t.step('open an article and verify attribution + evidence framing', async () => {
-      // article cards are <article> elements with "· N min" + "By <author>, RD/MD"
+    await t.step('article expands with full body, sources and RD-review note', async () => {
       const target = await p.evaluate(() => {
-        const els = [...document.querySelectorAll('article,li')].filter(e => {
+        const els = [...document.querySelectorAll('article')].filter(e => {
           const r = e.getBoundingClientRect();
-          return r.width > 200 && r.height > 60 && /min/i.test(e.innerText || '') && /RD|MD|Dr\./.test(e.innerText || '');
+          return r.width > 200 && r.height > 60 && /HerFuel Editorial/i.test(e.innerText || '');
         });
         if (!els.length) return null;
-        els[0].scrollIntoView({ block: 'center' });
+        els[0].scrollIntoView({ block: 'center', behavior: 'instant' });
         const r = els[0].getBoundingClientRect();
-        return { x: r.left + r.width / 2, y: r.top + r.height / 2, label: (els[0].innerText || '').replace(/\n/g, ' ').slice(0, 60) };
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2, label: (els[0].innerText || '').replace(/\n/g, ' ').slice(0, 50) };
       });
       t.expect(target, 'found an article card');
       await p.mouse.click(target.x, target.y);
-      await p.waitForTimeout(1400);
+      await p.waitForTimeout(1200);
       const txt = await H.bodyText(p);
-      t.expect(/RD|MD|Dr\.|Reviewed/i.test(txt), 'article detail carries attribution (opened: ' + target.label + ')');
+      t.expect(/Sources/i.test(txt), 'sources section shown (opened: ' + target.label + ')');
+      t.expect(/ACOG|NICE|NIH|Cochrane|WHO|BDA|Obesity Reviews|PLoS/i.test(txt), 'real guideline/review sources cited');
+      t.expect(/Pending review by a registered dietitian/i.test(txt), 'honest pending-RD-review note');
+    });
+
+    await t.step('videos are real YouTube links by credentialed creators', async () => {
+      await H.clickText(p, 'watch', { contains: true, nth: -1, mouse: true }).catch(() => H.clickText(p, 'Watch', { nth: -1, mouse: true }));
+      await p.waitForTimeout(1200);
+      const links = await p.evaluate(() => [...document.querySelectorAll('a[href*="youtube.com/watch"]')].filter(a => a.getBoundingClientRect().width > 0).length);
+      t.expect(links >= 2, 'YouTube links present (' + links + ')');
+      const txt = await H.bodyText(p);
+      t.expect(/Registered Dietitian|OB-GYN|Stanford|lactation consultant|Medical doctor/i.test(txt), 'creator credentials shown');
+    });
+
+    await t.step('groups carry no fabricated member counts', async () => {
+      await H.clickText(p, 'groups', { contains: true, nth: -1, mouse: true }).catch(() => H.clickText(p, 'Groups', { nth: -1, mouse: true }));
+      await p.waitForTimeout(1200);
+      const txt = await H.bodyText(p);
+      t.expect(/Join group|Open chat/i.test(txt), 'groups listed');
+      t.expect(!/\d{3,}\s*members|members\s*\d{3,}/i.test(txt) && !/1,?284|2,?156|1,?789/.test(txt), 'no fake member counts');
     });
   },
 };

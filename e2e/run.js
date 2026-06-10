@@ -45,6 +45,8 @@ async function main() {
           await fn();
           specResult.steps.push({ name, status: 'pass', ms: Date.now() - t0 });
           console.log(`   ✅ ${name} (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
+          // SHOTS_ALL=1 → screenshot after every step (debugging aid)
+          if (process.env.SHOTS_ALL) await H.shot(page, `step-${file.replace('.spec.js', '')}-${name.slice(0, 40)}`);
         } catch (e) {
           const screenshot = await H.shot(page, `${file.replace('.spec.js', '')}-${name.slice(0, 40)}`);
           const status = soft ? 'warn' : 'fail';

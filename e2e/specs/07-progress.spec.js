@@ -52,12 +52,16 @@ module.exports = {
       t.expect(/64\.5|64,5/.test(await H.bodyText(p)), 'new entry visible');
     });
 
-    await t.step('Insights are evidence-graded and expert-attributed', async () => {
-      const txt = await H.clickFor(p, 'Insights', /Strong|Supported|●●●/);
-      t.expect(/●●●|●●○|●○○/.test(txt), 'evidence dots present');
-      t.expect(/Strong|Supported|Worth a try/.test(txt), 'grade labels present');
-      t.expect(/Dr\.\s?[A-Z]/.test(txt), 'expert attribution present (e.g. Dr. Stacy Sims)');
-      t.expect(/\(\d{4}\)|\d{4}\b/.test(txt), 'sources carry years');
+    await t.step('Insights: honest empty state on a clean device (no fabricated patterns)', async () => {
+      const txt = await H.clickFor(p, 'Insights', /Log a few days|patterns here|Strong|Supported/i);
+      if (/●●●|●●○|●○○/.test(txt)) {
+        // data exists (e.g. logged earlier in this context) — insights must be graded + attributed
+        t.expect(/Strong|Supported|Worth a try/.test(txt), 'grade labels present');
+        t.expect(/Dr\.\s?[A-Z]/.test(txt), 'expert attribution present');
+      } else {
+        t.expect(/Log a few days|patterns here/i.test(txt), 'honest empty state shown');
+        t.expect(!/7-day average|\d+\/7 days/i.test(txt), 'no fabricated pattern claims without data');
+      }
     });
 
     await t.step('Milestones contain no weight/deficit streaks', async () => {

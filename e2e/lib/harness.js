@@ -199,7 +199,8 @@ async function fab(p, action) {
 async function goHome(p) {
   await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 45000 });
   await p.waitForTimeout(1600);
-  await waitText(p, /kcal left|kJ left|kcal/i, 10000);
+  // generous timeout: local dev servers compile routes on first hit
+  await waitText(p, /kcal left|kJ left|kcal/i, 25000);
 }
 
 function kcalLeft(text) {

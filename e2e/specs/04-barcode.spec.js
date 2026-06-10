@@ -37,7 +37,8 @@ module.exports = {
     await t.step('log barcode product to a meal', async () => {
       const logged = await p.evaluate(() => {
         const els = [...document.querySelectorAll('button')].filter(e => e.getBoundingClientRect().width > 0);
-        const el = els.find(e => /^(log|add)/i.test((e.innerText || '').trim()) && e.getBoundingClientRect().width > 120);
+        const el = els.find(e => /^log to (breakfast|lunch|dinner|snacks?)$/i.test((e.innerText || '').trim()))
+          || els.find(e => /^log\b/i.test((e.innerText || '').trim()) && e.getBoundingClientRect().width > 120);
         if (el) { el.click(); return (el.innerText || '').trim(); }
         return null;
       });

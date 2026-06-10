@@ -28,10 +28,12 @@ module.exports = {
       await p.waitForTimeout(1300);
       const detail = await H.bodyText(p);
       t.expect(/serving|portion|Log|Add|per 100/i.test(detail), 'food detail/confirm sheet opened');
+      // the sheet's CTA is "Log to <meal>" — the background page keeps its own
+      // "Add to breakfast" buttons in the DOM, so match the sheet CTA specifically
       const logged = await p.evaluate(() => {
         const els = [...document.querySelectorAll('button')].filter(e => e.getBoundingClientRect().width > 0);
-        const el = els.find(e => /^(log|add)( to)?( breakfast| lunch| dinner| snacks?)?$/i.test((e.innerText || '').trim()))
-          || els.find(e => /log|add/i.test((e.innerText || '').trim()) && e.getBoundingClientRect().width > 150);
+        const el = els.find(e => /^log to (breakfast|lunch|dinner|snacks?)$/i.test((e.innerText || '').trim()))
+          || els.find(e => /^log\b/i.test((e.innerText || '').trim()) && e.getBoundingClientRect().width > 150);
         if (el) { el.click(); return (el.innerText || '').trim(); }
         return null;
       });
