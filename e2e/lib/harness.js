@@ -29,6 +29,11 @@ const BADGE_KILLER = `(() => {
   // spec 01 opts out by setting the test marker, then clears the flag.
   try {
     if (!localStorage.getItem('herfuel.walkthrough.test')) localStorage.setItem('herfuel.walkthrough.v1', 'done');
+    // pre-choose English so specs see stable copy; spec 14 opts out via the test marker
+    if (!localStorage.getItem('herfuel.lang.test')) {
+      localStorage.setItem('herfuel.lang', 'en');
+      localStorage.setItem('herfuel.lang.chosen', '1');
+    }
   } catch (e) {}
 })()`;
 
