@@ -2,11 +2,13 @@
 
 Lovable-shaped version of `24-FOOD-DATABASE-MVP.md`: a **Supabase Edge Function proxy + cache-on-read** (not a bulk import). Free, commercial-OK, owns a normalized DB.
 
-**Before you run it:** get a free USDA key at `https://fdc.nal.usda.gov/api-key-signup/` and add it in Lovable as a Supabase secret named `USDA_FDC_API_KEY`. (Open Food Facts needs no key.)
+**Before you run it:** get a free USDA key at `https://fdc.nal.usda.gov/api-key-signup/`. You do **not** need to set anything up in advance — the prompt below tells Lovable to provision the backend and then ask you for the key. (Open Food Facts needs no key.)
 
 ---
 
 > Wire **real food data** into HerFuel using **free, commercial-friendly** sources via **Supabase**, replacing the mock food list. Use a **proxy + cache-on-read** pattern (don't bulk-import; cache each looked-up food into our own table so we own the data and stay vendor-independent).
+>
+> **0) Backend setup first.** This app currently has no backend (everything is localStorage). **Set up the backend now** — enable **Lovable Cloud** (or connect a Supabase project) so we have a Postgres database + Edge Functions. Then create a project secret named **`USDA_FDC_API_KEY`** and **prompt me to paste its value securely** (don't hard-code it anywhere; the edge functions read it via `Deno.env.get('USDA_FDC_API_KEY')`). Open Food Facts needs no key. After the backend exists, do the following:
 >
 > **1) Supabase schema — a normalized `foods` table** (our system of record), columns:
 > `id` (uuid), `source` ('usda' | 'off' | 'custom'), `source_id` (text), `barcode` (text, nullable), `name` (text), `brand` (text, nullable), `serving_label` (text, e.g. "1 cup"), `serving_grams` (numeric, nullable), and **per-100g** numerics: `kcal, protein_g, carbs_g, fat_g, fibre_g, sugar_g, sodium_mg, iron_mg, calcium_mg, magnesium_mg`, plus `raw` (jsonb, original payload), `created_at`. Unique index on `(source, source_id)` and an index on `barcode` and a text index on `name`. Keep `source='off'` rows clearly separable (ODbL — see compliance).
