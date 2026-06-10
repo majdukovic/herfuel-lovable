@@ -95,18 +95,17 @@ module.exports = {
       t.expect(/never sold|not sold|never sell/i.test(txt), 'never-sold promise stated');
     });
 
-    await t.step('connected apps screen present with honest data framing', async () => {
+    await t.step('connected apps: real Strava + honest framing, mock gone', async () => {
       await H.openMe(p);
       await H.clickText(p, 'Connected apps', { contains: true });
       await p.waitForTimeout(1100);
       const txt = await H.bodyText(p);
       t.expect(/never silently raises your target/i.test(txt), 'honest calories-burned framing');
       t.expect(/Disconnect any time/i.test(txt), 'disconnect promise');
-    });
-
-    await t.step('[soft] real Strava/Garmin/Renpho integrations live (pending prompt 30)', async () => {
-      const txt = await H.bodyText(p);
-      t.expect(/Strava/i.test(txt) && !/mock data only/i.test(txt), 'Connected apps still mock-only — expected until prompt 30 ships');
+      t.expect(/Connect with Strava|CONNECTED/i.test(txt), 'Strava connect present');
+      t.expect(/POWERED BY STRAVA/i.test(txt), 'Strava attribution present (branding requirement)');
+      t.expect(!/mock data only/i.test(txt), 'mock-data banner removed');
+      t.expect(!/Oura|Whoop|Withings/i.test(txt), 'untestable providers removed');
     });
   },
 };

@@ -33,9 +33,12 @@ A **women-first AI calorie & macro tracker** that adapts to a woman's **life-sta
 
 **Update 2026-06-10 (verified by the new regression suite):** several "pending" items turned out to be already shipped — **expert attribution** (tips + Insights cite Dr. Sims / Dr. Wallace / Dr. Rossi with sources), the **ED-safe onboarding check-in** ("Your wellbeing first" → "Soften the experience" hides the ring), and the **1,200-kcal safety floor + ED-safe controls** in Goals & targets ("safety floor of 1200 kcal", honest mode "pregnancy adds, not subtracts").
 
+**Update 2026-06-10 evening: prompts 29 + 30 are SHIPPED and verified** (deficit guard, BC branch in Progress→Cycle&body, photos, Strava OAuth + Renpho CSV). Strava app = client `257004` (secrets in Supabase + `~/strava_secrets.txt`, don't expose); **webhook subscription 353331 registered with Strava** (challenge echo verified). Mate's account connects successfully.
+
 **Pending / not yet built (next work):**
-- **Paste Lovable prompt `29`** (safety completion): explicit pregnancy/breastfeeding deficit guard, **birth-control branch in Cycle**, **progress photos** (private, off by default), soften-path follow-through, OFF "Unknown"-name fallback.
-- **Paste Lovable prompt `30`** (real integrations): **Strava OAuth** via edge functions (covers the Garmin watch via Garmin→Strava auto-sync), **Renpho CSV import**, Connected-apps rework (honest "Coming soon" for Apple Health/Garmin-direct; Oura/Whoop/Withings removed). Prereq: Strava API app + Supabase secrets (steps in doc 30; needs an active Strava subscription per the June-2026 Strava developer-program change).
+- **Paste Lovable prompt `31`** (Strava sync fix): first sync says "Synced 0 activities" — suspected `after=last_sync`-at-connect bug; doc 31 = backfill 30 most recent on first sync + 24h overlap + honest sync states + Renpho "imported" tag polish. Then manual test: "Sync now" → real Garmin activities (Garmin only pushes workouts recorded after linking; history importable in Strava settings).
+- **Decide direct-access path:** Lovable GitHub two-way sync (recommended; lets Claude code/test/deploy directly, prereq for Swift port) or Supabase access token (edge functions only).
+- **Manual OAuth test follow-through:** after 31, verify a real activity lands on Today's Activity card with calories and that the target does NOT change (off-by-default toggle).
 - **Regression suite** lives at `lovable-handoff/e2e/` (`node run.js`, Node ≥18, README inside). `[soft]` steps mark pending features (BC branch, real Strava) — flip them to hard steps when 29/30 ship.
 - **Polish:** confirm **HR-ranking** once region/locale is set. Verify **logging from search** on a real device.
 - **Known non-issue:** the Lovable **"Edit with" badge** overlaps the bottom-right nav/buttons on the `*.lovable.app` preview link (gone on a custom domain) — the e2e harness strips it; tell human testers to dismiss it.
