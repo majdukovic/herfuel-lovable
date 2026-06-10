@@ -97,3 +97,30 @@
 > **3. Make sure nothing overlaps the bottom-right corner** so the **"Log to {meal}" confirm button** and the **Progress** nav tab are always tappable (raise their z-index / add safe-area padding above any floating badge).
 > Keep everything else exactly as is — the logging Confirm sheet, copy/edit/remove, the module engine, Fuel Score, and the paywall are all good.
 
+---
+
+# RE-TEST 2 (2026-06-10, after Progress + ＋ + Me update) — most of it landed
+
+**Big update, mostly excellent.** The ＋ is fixed, Progress is redesigned, Me is expanded, dark mode works.
+
+## ✅ Now working (verified)
+- **＋ FAB actions work** — Search opens the Add-food sheet; **Scan opens a mocked photo-scan flow** ("Point at your plate. We'll recognise items and let you fix anything"). **Logging works end-to-end** (kcal 928 → 823 after logging a banana).
+- **Progress redesigned** — 5 sub-tabs (Trends · Measurements · Cycle & body · Insights · Milestones). **Trends** cards show **Start / Latest / Goal + Δ vs 7d + status** ("On target", "Trends only. No streaks here"). **Measurements** is a deep, grouped **library** (Favourites + Body / Body-composition / Health & metabolic / Diet & macros / Micronutrients / Lifestyle / Cycle & body) with ★ and "No entries yet" empty states. **Insights** are real, evidence-graded and **actionable** ("Protein −9 g/day vs goal ●●● Strong · adding one protein anchor closes most of this gap").
+- **Me expanded** — Profile · Goals & targets · Dietary preferences (chips) · Units · Appearance · Reminders · Connected apps · Privacy & data · **Fasting timer (with "not while pregnant" caution)**.
+- **Dark mode works** (segmented Light/Dark/System + Reduce motion + a Text-size slider; body flips to near-black). No page errors on the happy path.
+
+## 🔴 Still to fix (the deep-dive found these)
+1. **Measurements: tapping a measure opens nothing.** The library, favourites and empty states are built, but the per-measure **detail does not open** (the › rows are dead). So there's **no chart with time-ranges + goal line, no Start/Latest/Goal-in-detail, no Δ-over-time table, and — most importantly — no "+ Add entry."** That means the dozens of "No entries yet" rows (waist, body-fat, glucose, BBT, cycle length, etc.) **can't be filled** — there's no manual entry. This is the biggest remaining gap, especially for a women's app where manual weight/cycle/symptom entry matters.
+2. **Units don't actually convert.** Toggling to kilojoules / metric changes the label but the displayed values stay **kcal** (Today still showed "928 kcal" after switching to kJ). Needs real value conversion (kcal↔kJ ×4.184, lb↔kg, oz↔ml).
+3. **React #418 hydration error still fires** (intermittently — saw both `args[]=text` and `args[]=HTML` variants). Not fully fixed; find the component rendering different content on server vs client (often a date/locale/`Date.now()` or a value formatted before hydration).
+4. **Lovable "Edit with" badge still overlaps the bottom-right** — covers the **Progress** nav tab and can sit over confirm buttons on the live link. Move testing to a custom domain, or keep that corner clear.
+5. Minor: one **404 asset** on load.
+
+## ✉️ Follow-up prompt for Lovable (paste)
+> Great progress — four fixes left on the updated build:
+> **1. Make the Measurements detail open.** Tapping any measurement row (or its ›) must open a **detail screen**: a line chart with a dashed **goal line** + working **time-range** pills (1W/1M/3M/6M/1Y/All) that slice the data, a **Start / Latest / Goal** row + a plain-language status, a **change-over-time table** (7/30/90d/all), **history (edit/delete)**, **Set goal**, and crucially **"+ Add entry"** so a user can manually log weight, waist, body-fat, glucose, BBT, cycle length, etc. — that's what fills all the "No entries yet" rows. (Optional cycle-phase shading behind cycle charts.)
+> **2. Make Units actually convert the displayed values**, not just the labels: kcal↔kilojoules (×4.184) everywhere energy shows, and US↔metric for weight/height/volume (lb↔kg, oz↔ml). Persist the choice.
+> **3. Fix the remaining React #418 hydration error** — it still fires intermittently. Look for a value rendered differently on server vs client (date/locale formatting, `Date.now()`, or a number formatted pre-hydration); render it client-side only or make server/client output identical.
+> **4. Keep the bottom-right corner clear** so the Progress nav tab and any confirm button are never overlapped by a floating element.
+> Everything else (the ＋ flows, the Progress library + Trends + Insights, Me, dark mode, the Fasting timer) is good — leave it.
+
