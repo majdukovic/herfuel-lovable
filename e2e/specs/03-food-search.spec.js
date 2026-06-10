@@ -53,10 +53,12 @@ module.exports = {
       t.collect.edgeCalls.length = 0;
       await p.locator('input').first().fill('Vegeta');
       await p.waitForTimeout(5500);
+      // cache-on-read design: results may come from the cached foods table with
+      // no edge call at all — that's correct. If an edge call happened, it must be 200.
       const calls = t.collect.edgeCalls.filter(c => c.fn === 'food-search');
-      t.expect(calls.length > 0 && calls.every(c => c.status === 200), 'food-search 200 for HR brand');
+      t.expect(calls.every(c => c.status === 200), 'any food-search call returned 200');
       const txt = await H.bodyText(p);
-      t.expect(/vegeta/i.test(txt), 'Vegeta products listed');
+      t.expect(/vegeta/i.test(txt) && /kcal/i.test(txt), 'Vegeta products listed with nutrition');
     });
 
     await t.step('no-match search offers community contribution', async () => {
