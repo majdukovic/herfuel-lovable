@@ -25,6 +25,11 @@ const BADGE_KILLER = `(() => {
   };
   setInterval(kill, 400);
   document.addEventListener('DOMContentLoaded', kill);
+  // pre-dismiss the first-launch walkthrough so specs start on Today.
+  // spec 01 opts out by setting the test marker, then clears the flag.
+  try {
+    if (!localStorage.getItem('herfuel.walkthrough.test')) localStorage.setItem('herfuel.walkthrough.v1', 'done');
+  } catch (e) {}
 })()`;
 
 async function launch() {

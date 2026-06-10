@@ -71,12 +71,40 @@ module.exports = {
       t.expect(!/kcal left/i.test(today), 'no calorie countdown in softened mode');
     });
 
-    await t.step('Goals & targets has the 1200-kcal safety floor + ED-safe controls', async () => {
+    await t.step('first-launch walkthrough: 5 cards, next/close, finish', async () => {
+      await p.evaluate(() => {
+        localStorage.setItem('herfuel.walkthrough.test', '1'); // opt out of the harness auto-dismiss
+        localStorage.removeItem('herfuel.walkthrough.v1');
+      });
+      await p.reload({ waitUntil: 'networkidle' });
+      await H.waitText(p, /Welcome to HerFuel/i, 15000);
+      let seen = 0;
+      for (let i = 0; i < 5; i++) {
+        const txt = await H.bodyText(p);
+        if (/Welcome to HerFuel|Modules, not gates|Today, at a glance|Progress without shame|Bring your data/i.test(txt)) seen++;
+        const isLast = /Finish/.test(txt) && !/Next/.test(txt);
+        if (isLast) break;
+        await H.clickText(p, 'Next', { nth: -1, mouse: true });
+        await p.waitForTimeout(500);
+      }
+      t.expect(seen >= 4, `walked through cards (${seen}/5 recognised)`);
+      const lastTxt = await H.bodyText(p);
+      t.expect(/Bring your data/i.test(lastTxt), 'fifth card reached');
+      t.expect(/Finish/.test(lastTxt), 'Finish button on last card');
+      await H.clickText(p, 'Finish', { nth: -1, mouse: true });
+      await p.waitForTimeout(800);
+      t.expect(!/Welcome to HerFuel/i.test(await H.bodyText(p)), 'walkthrough dismissed');
+      // does not reappear
+      await p.reload({ waitUntil: 'networkidle' });
+      await p.waitForTimeout(1500);
+      t.expect(!/Welcome to HerFuel/i.test(await H.bodyText(p)), 'walkthrough stays dismissed after reload');
+    });
+
+    await t.step('Goals & targets has the safety floor + ED-safe controls', async () => {
       await H.openMe(p);
       await H.clickText(p, 'Goals & targets', { contains: true });
-      await p.waitForTimeout(1200);
-      const txt = await H.bodyText(p);
-      t.expect(/safety floor of 1,?200|Minimum kcal floor/i.test(txt), '1200-kcal floor copy present');
+      // floor value varies (1200 default; the soften path raises it) — assert the control, not the number
+      const txt = await H.waitText(p, /Minimum kcal floor|safety floor of \d/i, 10000);
       t.expect(/Hide the calorie ring/i.test(txt), 'ED-safe "hide the ring" control present');
       t.expect(/pregnancy adds, not subtracts|modules can override/i.test(txt), 'honest-mode pregnancy guard copy present');
     });
