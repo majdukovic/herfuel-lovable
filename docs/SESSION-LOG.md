@@ -148,3 +148,7 @@ Doc 36 spec executed: (A) community-food trust system — label-photo evidence (
 ## 2026-06-11 (night) · Citations UI, diacritic search, Croatian recipe pack
 
 Citation transparency live (food detail shows "Source:/Estimated nutrition:" from raw.source_citation; prompt 38 deployed). Diacritic-insensitive search live ("strukli"→Štrukli; unaccent migration + folded columns + query folding incl. đ→d); spec 17 now 6 steps, 6/6 vs production. Croatian recipe pack: 10 HZJZ/PETICA institutional recipes integrated into RECIPES with 176 HR translation keys (agent-built, byte-exact verified); 5 dishes dropped for lacking defensible sources — honesty bar held. Specs 05/12/15 19/19. OFF Croatia seeding grinding through OFF's intermittent 503 outage (~page 9/70 so far, driver retries; popular products already cached — cedevita answers instantly). Recipes ship on next Publish (frontend-only).
+
+## 2026-06-11 (close) · FINAL PRODUCTION GATE: 97/97
+
+Croatia seeding finished (5,147/6,974 products; quality gate skipped no-calorie rows; vegeta/kras/zvijezda/cokolino answer 0.5-1s from cache). Recipe pack published. Final full 17-spec production gate: 97/97 — accounts/sync, full Croatian, trust system, dishes+recipes packs, re-log, portions, first-week card, diacritic search, citations, all prior flows. Day closed with everything live. Open on Mate: Strava secret rotation, Croatian health-content native review, doc-34 tester invites.
