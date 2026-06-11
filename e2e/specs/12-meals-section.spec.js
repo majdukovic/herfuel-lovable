@@ -122,7 +122,8 @@ module.exports = {
         return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
       });
       await p.mouse.click(plan.x, plan.y);
-      await H.waitText(p, /shopping list/i, 8000);
+      // plan detail can compile/render late on dev — poll for the button itself
+      await H.waitText(p, /Add to shopping list/i, 15000);
       await H.clickText(p, 'Add to shopping list', { contains: true, nth: -1, mouse: true });
       await p.waitForTimeout(1100);
       t.expect(/Added \d+ items|Already on your list/i.test(await H.bodyText(p)), 'grocery confirmation');
