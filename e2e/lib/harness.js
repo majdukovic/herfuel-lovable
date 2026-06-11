@@ -166,6 +166,31 @@ async function openMe(p) {
 }
 
 // Open the center FAB, then one of its fan-out actions (Search/Scan/Voice/Barcode/Eating out/Saved/Water/Fast).
+
+// Click a food result row INSIDE the add-food sheet by name substring.
+// Scoped to [role=dialog] so background page text (e.g. Fuel-score
+// suggestions naming foods) can never steal the click.
+async function clickResultRow(p, text) {
+  let pt = null;
+  for (let i = 0; i < 30 && !pt; i++) {
+    pt = await p.evaluate((text) => {
+      const dlg = document.querySelector('[role=dialog]') || document;
+      const rows = [...dlg.querySelectorAll('button')].filter(b =>
+        /kcal\/100g/i.test(b.innerText || '') &&
+        (b.innerText || '').toLowerCase().includes(text.toLowerCase()) &&
+        b.getBoundingClientRect().width > 0);
+      if (!rows.length) return null;
+      rows[0].scrollIntoView({ block: 'center', behavior: 'instant' });
+      const r = rows[0].getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }, text);
+    if (!pt) await p.waitForTimeout(500);
+  }
+  if (!pt) throw new Error('result row not found: ' + text);
+  await p.mouse.click(pt.x, pt.y);
+  await p.waitForTimeout(700);
+}
+
 async function fab(p, action) {
   const f = await p.evaluate(() => {
     const H = innerHeight, W = innerWidth;
@@ -236,4 +261,4 @@ async function shot(p, name) {
   return file;
 }
 
-module.exports = { BASE, launch, newPage, bodyText, waitText, clickText, clickFor, tab, openMe, fab, goHome, kcalLeft, shot, SHOTS };
+module.exports = { clickResultRow, BASE, launch, newPage, bodyText, waitText, clickText, clickFor, tab, openMe, fab, goHome, kcalLeft, shot, SHOTS };

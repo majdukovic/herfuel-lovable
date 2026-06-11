@@ -11,7 +11,7 @@ module.exports = {
       await H.fab(p, 'Search');
       await p.locator('input').first().fill('greek yogurt');
       await p.waitForTimeout(5000);
-      await H.clickText(p, 'Greek', { contains: true, nth: 0 });
+      await H.clickResultRow(p, 'Greek');
       await p.waitForTimeout(1300);
       const logged = await p.evaluate(() => {
         const els = [...document.querySelectorAll('button')].filter(e => e.getBoundingClientRect().width > 0);

@@ -15,8 +15,12 @@ module.exports = {
 
     await t.step('generic search hits food-search edge fn and returns results', async () => {
       await p.locator('input').first().fill('greek yogurt');
-      await p.waitForTimeout(5000);
-      const calls = t.collect.edgeCalls.filter(c => c.fn === 'food-search');
+      // OFF upstream can be slow/down — poll up to 20s for the call to land
+      let calls = [];
+      for (let i = 0; i < 20 && !calls.length; i++) {
+        await p.waitForTimeout(1000);
+        calls = t.collect.edgeCalls.filter(c => c.fn === 'food-search');
+      }
       t.expect(calls.length > 0, 'food-search edge function called');
       t.expect(calls.every(c => c.status === 200), 'food-search returned 200 (got ' + JSON.stringify(calls) + ')');
       const txt = await H.bodyText(p);
@@ -24,7 +28,7 @@ module.exports = {
     });
 
     await t.step('open a result and log it to a meal', async () => {
-      await H.clickText(p, 'Greek', { contains: true, nth: 0 });
+      await H.clickResultRow(p, 'Greek');
       await p.waitForTimeout(1300);
       const detail = await H.bodyText(p);
       t.expect(/serving|portion|Log|Add|per 100/i.test(detail), 'food detail/confirm sheet opened');
