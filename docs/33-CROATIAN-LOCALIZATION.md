@@ -36,3 +36,16 @@
 - **Tier 2**: remaining settings/dialogs/empty states (+~150 strings).
 - **Tier 3**: tips + Insights + walkthrough-adjacent guidance (needs Mate's review), then articles (longest).
 - **Auth screens** (upcoming accounts feature) ship bilingual from day one.
+
+---
+
+## STATUS UPDATE (2026-06-11) — Full coverage shipped
+
+Tier 2/3 is done. The combined effort (Lovable filled the dictionary fragments; Claude swept the render sites):
+
+- **Dictionary**: 6 fragments + new `hr-gaps.ts`, ~1,156 keys total. Keys are exact English source strings; English literals never changed (tests depend on them).
+- **Render-site sweep**: ~175 previously hard-coded English spots wrapped in `t()` — the entire Me section (index rows + subtitles, Profile, Goals & targets, Diet & allergies, Units, Appearance, Experience, Reminders, Privacy & data, Connected apps, Experiments), Modules, Fasting, 404 page, Circle header, MacroDonut legend, ContributeFoodForm, walkthrough/FAB/meal-options aria-labels.
+- **Bug fixed**: Today passed pre-translated meal labels into `MealGroup`, so in Croatian the add buttons built a key like `"Add to doručak"` (dictionary miss → mixed-language button). Now raw English labels go in and `MealGroup` translates.
+- **Intentionally English**: "Powered by Strava" (brand requirement), org/citation names (USDA, Open Food Facts, Dr. Jen Gunter, journals), YouTube titles, units, in-Strava navigation paths.
+- **Verification**: audit script reports 0 missing `t()` keys; new **spec 15 "Croatian sweep"** loads every major screen in HR and asserts Croatian chrome + absence of known English leftovers. Full local suite green.
+- **Still pending**: Mate's native review of all health-content translations (in-app "pending review" note stays until then).

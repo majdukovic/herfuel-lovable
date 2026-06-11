@@ -42,17 +42,22 @@ module.exports = {
       await H.goHome(p);
       await H.tab(p, 'Progress');
       await H.clickFor(p, 'Measurements', /FAVOURITES|Body weight/i);
-      // rows can carry an "IMPORTED" tag + value, so allow longer text
-      const pt = await p.evaluate(() => {
-        const els = [...document.querySelectorAll('button,a,div,li,article')].filter(e => {
-          const txt = (e.innerText || '').replace(/\s+/g, ' ').trim();
-          return txt.startsWith('Body weight') && txt.length < 60 && e.getBoundingClientRect().width > 0;
-        }).sort((a, b) => (a.innerText || '').length - (b.innerText || '').length);
-        if (!els.length) return null;
-        els[0].scrollIntoView({ block: 'center', behavior: 'instant' });
-        const r = els[0].getBoundingClientRect();
-        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-      });
+      // rows can carry an "IMPORTED" tag + value, so allow longer text.
+      // The list mounts client-side (skeleton first) — poll up to 8s for the row.
+      let pt = null;
+      for (let i = 0; i < 16 && !pt; i++) {
+        pt = await p.evaluate(() => {
+          const els = [...document.querySelectorAll('button,a,div,li,article')].filter(e => {
+            const txt = (e.innerText || '').replace(/\s+/g, ' ').trim();
+            return txt.startsWith('Body weight') && txt.length < 60 && e.getBoundingClientRect().width > 0;
+          }).sort((a, b) => (a.innerText || '').length - (b.innerText || '').length);
+          if (!els.length) return null;
+          els[0].scrollIntoView({ block: 'center', behavior: 'instant' });
+          const r = els[0].getBoundingClientRect();
+          return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+        });
+        if (!pt) await p.waitForTimeout(500);
+      }
       t.expect(pt, 'Body weight row found');
       await p.mouse.click(pt.x, pt.y);
       await p.waitForTimeout(1300);
