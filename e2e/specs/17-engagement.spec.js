@@ -70,6 +70,18 @@ module.exports = {
       await p.keyboard.press('Escape').catch(() => {});
     });
 
+    await t.step('diacritic-insensitive search: "strukli" finds Štrukli', async () => {
+      await H.goHome(p);
+      await H.fab(p);
+      await H.clickText(p, 'Search', { contains: true, mouse: true });
+      await p.waitForTimeout(600);
+      const input = p.locator('input[placeholder*="oats"], input[placeholder*="zob"]').first();
+      await input.fill('strukli');
+      const txt = await H.waitText(p, /Štrukli|štrukli/, 20000);
+      t.expect(/Štrukli/i.test(txt), 'Štrukli found without typing diacritics');
+      await p.keyboard.press('Escape').catch(() => {});
+    });
+
     await t.step('contribution requires an account (honest gate)', async () => {
       await H.goHome(p);
       await H.fab(p);
