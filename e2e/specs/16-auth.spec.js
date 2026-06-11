@@ -43,8 +43,9 @@ module.exports = {
         const day = new Date(); day.setHours(0,0,0,0);
         const ymd = `${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`;
         const logs = JSON.parse(localStorage.getItem(KEY) || '{}');
-        logs[ymd] = logs[ymd] || { breakfast: [], lunch: [], dinner: [], snacks: [] };
-        logs[ymd].breakfast.push({ id: 'e2e-sync-food', name: 'E2E Sync Oats', kcal: 222, protein: 8, carbs: 40, fat: 4, qty: 1, unit: 'serving' });
+        // real DayLog schema: { meals: { breakfast/lunch/dinner/snack }, waterMl }
+        logs[ymd] = logs[ymd] || { meals: { breakfast: [], lunch: [], dinner: [], snack: [] }, waterMl: 0 };
+        logs[ymd].meals.breakfast.push({ id: 'e2e-sync-food', name: 'E2E Sync Oats', kcal: 222, protein: 8, carbs: 40, fat: 4, qty: 1, unit: 'serving' });
         localStorage.setItem(KEY, JSON.stringify(logs));
       });
       // give the 5s push loop time to upsert
@@ -61,17 +62,26 @@ module.exports = {
       await p.locator('input[type="password"]').fill(password);
       // the submit button is the full-width one (last "Sign in")
       await H.clickText(p, 'Sign in', { nth: -1, mouse: true });
-      await p.waitForTimeout(6000);
-      const restored = await p.evaluate(() => {
-        const logs = localStorage.getItem('herfuel.logs.v1') || '';
-        return logs.includes('E2E Sync Oats');
-      });
+      // reconcile is a network round-trip (+ possible redirect) — poll up to 20s
+      let restored = false;
+      for (let i = 0; i < 20 && !restored; i++) {
+        await p.waitForTimeout(1000);
+        restored = await p.evaluate(() => {
+          const logs = localStorage.getItem('herfuel.logs.v1') || '';
+          return logs.includes('E2E Sync Oats');
+        }).catch(() => false);
+      }
       t.expect(restored, 'logged food restored from the cloud on a fresh device');
     });
 
     await t.step('sign out from Me', async () => {
       await p.goto(H.BASE + '/me', { waitUntil: 'networkidle' });
-      await H.waitText(p, /Sign out/i, 15000);
+      // Lovable SSR occasionally serves its error page transiently — retry once
+      if (/didn't load/i.test(await H.bodyText(p))) {
+        await p.waitForTimeout(2000);
+        await p.goto(H.BASE + '/me', { waitUntil: 'networkidle' });
+      }
+      await H.waitText(p, /Sign out/i, 20000);
       await H.clickText(p, 'Sign out', { nth: -1, mouse: true });
       await p.waitForTimeout(2500);
       const txt = await H.bodyText(p);
